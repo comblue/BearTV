@@ -4,7 +4,7 @@ import com.fongmi.android.tv.BuildConfig;
 
 import org.greenrobot.eventbus.EventBus;
 
-public class ActionEvent {
+public record ActionEvent(String action) {
 
     public static String STOP = BuildConfig.APPLICATION_ID.concat(".stop");
     public static String PREV = BuildConfig.APPLICATION_ID.concat(".prev");
@@ -15,8 +15,6 @@ public class ActionEvent {
     public static String AUDIO = BuildConfig.APPLICATION_ID.concat(".audio");
     public static String REPLAY = BuildConfig.APPLICATION_ID.concat(".replay");
     public static String UPDATE = BuildConfig.APPLICATION_ID.concat(".update");
-
-    private final String action;
 
     public static void send(String action) {
         EventBus.getDefault().post(new ActionEvent(action));
@@ -54,15 +52,7 @@ public class ActionEvent {
         send(UPDATE);
     }
 
-    public ActionEvent(String action) {
-        this.action = action;
-    }
-
-    public String getAction() {
-        return action;
-    }
-
     public boolean isUpdate() {
-        return UPDATE.equals(getAction());
+        return UPDATE.equals(action());
     }
 }

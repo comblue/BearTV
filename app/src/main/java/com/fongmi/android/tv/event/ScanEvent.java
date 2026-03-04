@@ -2,19 +2,9 @@ package com.fongmi.android.tv.event;
 
 import org.greenrobot.eventbus.EventBus;
 
-public class ScanEvent {
-
-    private final String address;
+public record ScanEvent(String address) {
 
     public static void post(String address) {
         EventBus.getDefault().post(new ScanEvent(address));
-    }
-
-    public ScanEvent(String address) {
-        this.address = address;
-    }
-
-    public String getAddress() {
-        return address;
     }
 }

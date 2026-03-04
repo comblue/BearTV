@@ -268,7 +268,7 @@ public class LiveActivity extends BaseActivity implements CustomKeyDown.Listener
         List<Group> items = new ArrayList<>();
         for (Group group : live.getGroups()) (group.isHidden() ? mHides : items).add(group);
         mGroupAdapter.addAll(items);
-        setPosition(LiveConfig.get().find(items));
+        setPosition(LiveConfig.get().findKeepPosition(items));
     }
 
     private void setWidth(Live live) {
@@ -637,10 +637,10 @@ public class LiveActivity extends BaseActivity implements CustomKeyDown.Listener
         mBinding.widget.name.setMaxEms(48);
         mChannel.loadLogo(mBinding.widget.logo);
         mBinding.control.title.setSelected(true);
+        mBinding.widget.line.setText(mChannel.getLine());
         mBinding.widget.name.setText(mChannel.getShow());
         mBinding.control.title.setText(mChannel.getShow());
         mBinding.widget.namePip.setText(mChannel.getShow());
-        mBinding.widget.line.setText(mChannel.getLineText());
         mBinding.widget.number.setText(mChannel.getNumber());
         mBinding.widget.numberPip.setText(mChannel.getNumber());
         mBinding.widget.line.setVisibility(mChannel.getLineVisible());
@@ -733,7 +733,6 @@ public class LiveActivity extends BaseActivity implements CustomKeyDown.Listener
 
             @Override
             public void success() {
-                RefreshEvent.config();
                 setLive(getHome());
             }
 
@@ -783,18 +782,18 @@ public class LiveActivity extends BaseActivity implements CustomKeyDown.Listener
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onActionEvent(ActionEvent event) {
-        if (ActionEvent.PLAY.equals(event.getAction())) {
+        if (ActionEvent.PLAY.equals(event.action())) {
             onPlay();
-        } else if (ActionEvent.PAUSE.equals(event.getAction())) {
+        } else if (ActionEvent.PAUSE.equals(event.action())) {
             onPaused();
-        } else if (ActionEvent.NEXT.equals(event.getAction())) {
+        } else if (ActionEvent.NEXT.equals(event.action())) {
             nextChannel();
-        } else if (ActionEvent.PREV.equals(event.getAction())) {
+        } else if (ActionEvent.PREV.equals(event.action())) {
             prevChannel();
-        } else if (ActionEvent.AUDIO.equals(event.getAction())) {
+        } else if (ActionEvent.AUDIO.equals(event.action())) {
             moveTaskToBack(true);
             setAudioOnly(true);
-        } else if (ActionEvent.STOP.equals(event.getAction())) {
+        } else if (ActionEvent.STOP.equals(event.action())) {
             finish();
         }
     }
@@ -813,8 +812,8 @@ public class LiveActivity extends BaseActivity implements CustomKeyDown.Listener
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onPlayerEvent(PlayerEvent event) {
-        if (!event.getTag().equals(tag)) return;
-        switch (event.getState()) {
+        if (!event.tag().equals(tag)) return;
+        switch (event.state()) {
             case PlayerEvent.PREPARE:
                 setDecode();
                 break;

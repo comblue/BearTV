@@ -10,12 +10,8 @@ public class RefreshEvent {
     private String path;
     private Vod vod;
 
-    public static void config() {
-        EventBus.getDefault().post(new RefreshEvent(Type.CONFIG));
-    }
-
-    public static void video() {
-        EventBus.getDefault().post(new RefreshEvent(Type.VIDEO));
+    public static void home() {
+        EventBus.getDefault().post(new RefreshEvent(Type.HOME));
     }
 
     public static void history() {
@@ -28,10 +24,6 @@ public class RefreshEvent {
 
     public static void size() {
         EventBus.getDefault().post(new RefreshEvent(Type.SIZE));
-    }
-
-    public static void wall() {
-        EventBus.getDefault().post(new RefreshEvent(Type.WALL));
     }
 
     public static void live() {
@@ -85,6 +77,6 @@ public class RefreshEvent {
     }
 
     public enum Type {
-        CONFIG, VIDEO, HISTORY, KEEP, SIZE, WALL, LIVE, DETAIL, PLAYER, SUBTITLE, DANMAKU, VOD
+        HOME, HISTORY, KEEP, SIZE, LIVE, DETAIL, PLAYER, SUBTITLE, DANMAKU, VOD
     }
 }

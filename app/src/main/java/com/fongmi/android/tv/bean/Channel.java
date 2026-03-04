@@ -63,8 +63,8 @@ public class Channel {
     private boolean selected;
     private Group group;
     private String show;
+    private int index;
     private Epg data;
-    private int line;
 
     public static Channel objectFrom(JsonElement element) {
         return App.gson().fromJson(element, Channel.class);
@@ -241,12 +241,12 @@ public class Channel {
         this.data = data;
     }
 
-    public int getLine() {
-        return line;
+    public int getIndex() {
+        return index;
     }
 
-    public void setLine(int line) {
-        this.line = Math.max(line, 0);
+    public void setIndex(int index) {
+        this.index = Math.max(index, 0);
     }
 
     public boolean isSelected() {
@@ -274,11 +274,13 @@ public class Channel {
         if (urls.isEmpty()) return;
         int size = urls.size();
         int step = next ? 1 : -1;
-        setLine((getLine() + step + size) % size);
+        setIndex((getIndex() + step + size) % size);
     }
 
     public String getCurrent() {
-        return getUrls().isEmpty() ? "" : getUrls().get(getLine()).split("\\$")[0];
+        if (getUrls().isEmpty()) return "";
+        String url = getUrls().get(getIndex());
+        return (getDrm() != null) ? url : url.split("\\$")[0];
     }
 
     public boolean isOnly() {
@@ -286,7 +288,7 @@ public class Channel {
     }
 
     public boolean isLast() {
-        return getUrls().isEmpty() || getLine() == getUrls().size() - 1;
+        return getUrls().isEmpty() || getIndex() == getUrls().size() - 1;
     }
 
     public boolean hasCatchup() {
@@ -295,11 +297,11 @@ public class Channel {
         return !getCatchup().isEmpty();
     }
 
-    public String getLineText() {
+    public String getLine() {
         if (getUrls().size() <= 1) return "";
-        String[] sp = getUrls().get(getLine()).split("\\$");
+        String[] sp = getUrls().get(getIndex()).split("\\$");
         if (sp.length > 1 && !sp[1].isEmpty()) return sp[1];
-        return ResUtil.getString(R.string.live_line, getLine() + 1);
+        return ResUtil.getString(R.string.live_line, getIndex() + 1);
     }
 
     public Channel setNumber(int number) {
@@ -323,11 +325,11 @@ public class Channel {
         if (live.getLogo().contains("{") && !getLogo().startsWith("http")) setLogo(live.getLogo().replace("{id}", getTvgId()).replace("{name}", getTvgName()).replace("{logo}", getLogo()));
     }
 
-    public void setLine(String line) {
+    public void setIndex(String line) {
         for (int i = 0; i < getUrls().size(); i++) {
             String url = getUrls().get(i);
             if (url.equals(line) || (url.contains("$") && line.equals(url.split("\\$")[0]))) {
-                setLine(i);
+                setIndex(i);
                 break;
             }
         }

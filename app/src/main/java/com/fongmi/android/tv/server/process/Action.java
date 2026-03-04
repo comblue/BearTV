@@ -110,18 +110,25 @@ public class Action implements Process {
     }
 
     private void onSync(Map<String, String> params) {
-        boolean keep = Objects.equals(params.get("type"), "keep");
+        String type = params.get("type");
         boolean force = Objects.equals(params.get("force"), "true");
-        boolean history = Objects.equals(params.get("type"), "history");
         String mode = Objects.requireNonNullElse(params.get("mode"), "0");
         if (params.get("device") != null && (mode.equals("0") || mode.equals("2"))) {
             Device device = Device.objectFrom(params.get("device"));
-            if (history) sendHistory(device, params);
-            else if (keep) sendKeep(device);
+            if ("history".equals(type)) sendHistory(device, params);
+            else if ("keep".equals(type)) sendKeep(device);
         }
         if (mode.equals("0") || mode.equals("1")) {
-            if (history) syncHistory(params, force);
-            else if (keep) syncKeep(params, force);
+            if ("history".equals(type)) syncHistory(params, force);
+            else if ("keep".equals(type)) syncKeep(params, force);
+        }
+    }
+
+    private void post(Device device, String type, FormBody.Builder body) {
+        try {
+            OkHttp.newCall(OkHttp.client(Constant.TIMEOUT_SYNC), device.getIp().concat("/action?do=sync&mode=0&type=" + type), body.build()).execute();
+        } catch (Exception e) {
+            App.post(() -> Notify.show(e.getMessage()));
         }
     }
 
@@ -132,7 +139,7 @@ public class Action implements Process {
             FormBody.Builder body = new FormBody.Builder();
             body.add("config", config.toString());
             body.add("targets", App.gson().toJson(History.get(config.getId())));
-            OkHttp.newCall(OkHttp.client(Constant.TIMEOUT_SYNC), device.getIp().concat("/action?do=sync&mode=0&type=history"), body.build()).execute();
+            post(device, "history", body);
         } catch (Exception e) {
             App.post(() -> Notify.show(e.getMessage()));
         }
@@ -143,7 +150,7 @@ public class Action implements Process {
             FormBody.Builder body = new FormBody.Builder();
             body.add("targets", App.gson().toJson(Keep.getVod()));
             body.add("configs", App.gson().toJson(Config.findUrls()));
-            OkHttp.newCall(OkHttp.client(Constant.TIMEOUT_SYNC), device.getIp().concat("/action?do=sync&mode=0&type=keep"), body.build()).execute();
+            post(device, "keep", body);
         } catch (Exception e) {
             App.post(() -> Notify.show(e.getMessage()));
         }
@@ -158,16 +165,15 @@ public class Action implements Process {
             History.sync(targets);
             RefreshEvent.history();
         } else {
-            VodConfig.load(config, getCallback(targets));
+            VodConfig.load(config, getCallback(targets, force, config.getId()));
         }
     }
 
-    private Callback getCallback(List<History> targets) {
+    private Callback getCallback(List<History> targets, boolean force, int cid) {
         return new Callback() {
             @Override
             public void success() {
-                RefreshEvent.config();
-                RefreshEvent.video();
+                if (force) History.delete(cid);
                 History.sync(targets);
                 RefreshEvent.history();
             }
@@ -183,7 +189,7 @@ public class Action implements Process {
         List<Keep> targets = Keep.arrayFrom(params.get("targets"));
         List<Config> configs = Config.arrayFrom(params.get("configs"));
         if (TextUtils.isEmpty(VodConfig.getUrl()) && !configs.isEmpty()) {
-            VodConfig.load(Config.find(configs.get(0)), getCallback(configs, targets));
+            VodConfig.load(Config.find(configs.get(0)), getCallback(configs, targets, force));
         } else {
             if (force) Keep.deleteAll();
             Keep.sync(configs, targets);
@@ -191,14 +197,12 @@ public class Action implements Process {
         }
     }
 
-    private Callback getCallback(List<Config> configs, List<Keep> targets) {
+    private Callback getCallback(List<Config> configs, List<Keep> targets, boolean force) {
         return new Callback() {
             @Override
             public void success() {
-                RefreshEvent.config();
-                RefreshEvent.video();
+                if (force) Keep.deleteAll();
                 Keep.sync(configs, targets);
-                RefreshEvent.history();
                 RefreshEvent.keep();
             }
 

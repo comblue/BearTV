@@ -18,9 +18,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.zip.CRC32;
 
 import fi.iki.elonen.NanoHTTPD.IHTTPSession;
 import fi.iki.elonen.NanoHTTPD.Response;
@@ -44,7 +44,7 @@ public class Local implements Process {
         if (url.startsWith("/file")) return getFile(session.getHeaders(), url);
         if (url.startsWith("/upload")) return upload(session.getParms(), files);
         if (url.startsWith("/newFolder")) return newFolder(session.getParms());
-        if (url.startsWith("/delFolder") || url.startsWith("/delFile")) return delFolder(session.getParms());
+        if (url.startsWith("/delFolder") || url.startsWith("/delFile")) return delete(session.getParms());
         return null;
     }
 
@@ -77,46 +77,41 @@ public class Local implements Process {
         return Nano.ok();
     }
 
-    private Response delFolder(Map<String, String> params) {
+    private Response delete(Map<String, String> params) {
         String path = params.get("path");
         Path.clear(Path.root(path));
         return Nano.ok();
     }
 
-    private Response getFolder(File root) {
-        List<File> list = Path.list(root);
-        JsonObject info = new JsonObject();
-        info.addProperty("parent", root.equals(Path.root()) ? "." : root.getParent().replace(Path.rootPath(), ""));
-        if (list.isEmpty()) {
-            info.add("files", new JsonArray());
-            return Nano.ok(info.toString());
-        }
+    private Response getFolder(File dir) {
+        File rootDir = Path.root();
+        String rootPath = rootDir.getAbsolutePath();
         JsonArray files = new JsonArray();
-        info.add("files", files);
-        for (File file : list) {
+        for (File file : Path.list(dir)) {
             JsonObject obj = new JsonObject();
             obj.addProperty("name", file.getName());
-            obj.addProperty("path", file.getAbsolutePath().replace(Path.rootPath(), ""));
+            obj.addProperty("path", relativeTo(file, rootPath));
             obj.addProperty("time", format.format(new Date(file.lastModified())));
             obj.addProperty("dir", file.isDirectory() ? 1 : 0);
             files.add(obj);
         }
+        JsonObject info = new JsonObject();
+        info.addProperty("parent", parentOf(dir, rootDir, rootPath));
+        info.add("files", files);
         return Nano.ok(info.toString());
     }
 
     private Response getFile(Map<String, String> headers, File file, String mime) throws IOException {
         long fileLen = file.length();
+        String etag = etag(file, fileLen);
         String ifNoneMatch = headers.get("if-none-match");
-        String etag = Integer.toHexString((file.getAbsolutePath() + file.lastModified() + fileLen).hashCode());
         if (ifNoneMatch != null && (ifNoneMatch.equals("*") || ifNoneMatch.equals(etag))) {
             return newFixedLengthResponse(Status.NOT_MODIFIED, mime, "");
         }
         HttpRange range = HttpRange.from(fileLen, headers, etag);
-        if (!range.valid()) {
-            return createRangeNotSatisfiableResponse(fileLen);
-        }
+        if (!range.valid()) return createRangeNotSatisfiableResponse(fileLen);
         FileInputStream fis = new FileInputStream(file);
-        robustSkip(fis, range.start);
+        skip(fis, range.start);
         Response res;
         if (range.isPartial(fileLen)) {
             res = newFixedLengthResponse(Status.PARTIAL_CONTENT, mime, fis, range.length);
@@ -130,57 +125,67 @@ public class Local implements Process {
         return res;
     }
 
+    private String etag(File file, long fileLen) {
+        CRC32 crc = new CRC32();
+        crc.update((file.getAbsolutePath() + file.lastModified() + fileLen).getBytes());
+        return Long.toHexString(crc.getValue());
+    }
+
     private Response createRangeNotSatisfiableResponse(long fileLen) {
         Response res = newFixedLengthResponse(Status.RANGE_NOT_SATISFIABLE, MIME_PLAINTEXT, "");
         res.addHeader("Content-Range", "bytes */" + fileLen);
         return res;
     }
 
-    private void robustSkip(InputStream fis, long bytesToSkip) throws IOException {
+    private void skip(InputStream is, long bytesToSkip) throws IOException {
         if (bytesToSkip <= 0) return;
         long remaining = bytesToSkip;
         while (remaining > 0) {
-            long skipped = fis.skip(remaining);
-            if (skipped <= 0) {
-                throw new IOException("Failed to skip desired number of bytes");
-            }
+            long skipped = is.skip(remaining);
+            if (skipped <= 0) throw new IOException("Failed to skip desired number of bytes");
             remaining -= skipped;
         }
     }
 
+    private static String relativeTo(File file, String rootPath) {
+        String path = file.getAbsolutePath();
+        return path.startsWith(rootPath) ? path.substring(rootPath.length()) : path;
+    }
+
+    private static String parentOf(File dir, File rootDir, String rootPath) {
+        if (dir.equals(rootDir)) return ".";
+        File parent = dir.getParentFile();
+        if (parent == null || parent.equals(rootDir)) return "";
+        return relativeTo(parent, rootPath);
+    }
+
     private record HttpRange(long start, long end, long length, boolean valid) {
 
-        public boolean isPartial(long fileTotalLength) {
-            return this.length < fileTotalLength;
+        public boolean isPartial(long total) {
+            return length < total;
+        }
+
+        public static HttpRange invalid() {
+            return new HttpRange(0, 0, 0, false);
         }
 
         public static HttpRange from(long fileLen, Map<String, String> headers, String etag) {
             long start = 0;
             long end = fileLen - 1;
             String rangeHeader = headers.get("range");
-            String ifRangeHeader = headers.get("if-range");
-            if (ifRangeHeader != null && !ifRangeHeader.equals(etag)) {
-                rangeHeader = null;
-            }
+            String ifRange = headers.get("if-range");
+            if (ifRange != null && !ifRange.equals(etag)) rangeHeader = null;
             if (rangeHeader != null && rangeHeader.startsWith("bytes=")) {
                 try {
                     String[] parts = rangeHeader.substring(6).split("-", 2);
-                    if (!parts[0].isEmpty()) {
-                        start = Long.parseLong(parts[0]);
-                    }
-                    if (parts.length > 1 && !parts[1].isEmpty()) {
-                        end = Long.parseLong(parts[1]);
-                    }
-                    if (start >= fileLen || start > end) {
-                        return new HttpRange(0, 0, 0, false);
-                    }
+                    if (!parts[0].isEmpty()) start = Long.parseLong(parts[0]);
+                    if (parts.length > 1 && !parts[1].isEmpty()) end = Long.parseLong(parts[1]);
+                    if (start >= fileLen || start > end) return invalid();
                 } catch (NumberFormatException e) {
-                    return new HttpRange(0, 0, 0, false);
+                    return invalid();
                 }
             }
-            if (end >= fileLen) {
-                end = fileLen - 1;
-            }
+            if (end >= fileLen) end = fileLen - 1;
             return new HttpRange(start, end, end - start + 1, true);
         }
     }

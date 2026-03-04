@@ -14,7 +14,6 @@ import com.fongmi.android.tv.api.config.VodConfig;
 import com.fongmi.android.tv.bean.History;
 import com.fongmi.android.tv.databinding.DialogReceiveBinding;
 import com.fongmi.android.tv.event.CastEvent;
-import com.fongmi.android.tv.event.RefreshEvent;
 import com.fongmi.android.tv.impl.Callback;
 import com.fongmi.android.tv.ui.activity.VideoActivity;
 import com.fongmi.android.tv.utils.ImgUtil;
@@ -52,9 +51,9 @@ public class ReceiveDialog extends BaseDialog {
 
     @Override
     protected void initView() {
-        History item = event.getHistory();
+        History item = event.history();
         binding.name.setText(item.getVodName());
-        binding.from.setText(event.getDevice().getName());
+        binding.from.setText(event.device().getName());
         ImgUtil.load(item.getVodName(), item.getVodPic(), binding.image);
     }
 
@@ -76,12 +75,12 @@ public class ReceiveDialog extends BaseDialog {
     }
 
     private void onReceiveCast() {
-        if (VodConfig.get().getConfig().equals(event.getConfig())) {
-            VideoActivity.cast(requireActivity(), event.getHistory().save(VodConfig.getCid()));
+        if (VodConfig.get().getConfig().equals(event.config())) {
+            VideoActivity.cast(requireActivity(), event.history().save(VodConfig.getCid()));
             dismiss();
         } else {
             showProgress();
-            VodConfig.load(event.getConfig(), getCallback());
+            VodConfig.load(event.config(), getCallback());
         }
     }
 
@@ -89,8 +88,6 @@ public class ReceiveDialog extends BaseDialog {
         return new Callback() {
             @Override
             public void success() {
-                RefreshEvent.config();
-                RefreshEvent.video();
                 onReceiveCast();
                 hideProgress();
             }

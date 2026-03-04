@@ -52,6 +52,13 @@ public class UrlUtil {
         return path != null ? url.replace(scheme + "://", Server.get().getAddress(path)) : url;
     }
 
+    public static String getName(String url) {
+        Uri uri = Uri.parse(url);
+        String path = path(uri);
+        String host = host(uri);
+        return !path.isEmpty() ? path : !host.isEmpty() ? host : url;
+    }
+
     public static String fixHeader(String key) {
         if (HttpHeaders.USER_AGENT.equalsIgnoreCase(key)) return HttpHeaders.USER_AGENT;
         if (HttpHeaders.REFERER.equalsIgnoreCase(key)) return HttpHeaders.REFERER;

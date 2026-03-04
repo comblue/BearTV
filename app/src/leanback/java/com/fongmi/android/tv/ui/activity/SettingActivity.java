@@ -20,6 +20,7 @@ import com.fongmi.android.tv.bean.Live;
 import com.fongmi.android.tv.bean.Site;
 import com.fongmi.android.tv.databinding.ActivitySettingBinding;
 import com.fongmi.android.tv.db.AppDatabase;
+import com.fongmi.android.tv.event.ConfigEvent;
 import com.fongmi.android.tv.event.RefreshEvent;
 import com.fongmi.android.tv.impl.Callback;
 import com.fongmi.android.tv.impl.ConfigCallback;
@@ -140,19 +141,19 @@ public class SettingActivity extends BaseActivity implements ConfigCallback, Sit
     private void load(Config config) {
         switch (config.getType()) {
             case 0:
-                VodConfig.load(config, getCallback(0));
+                VodConfig.load(config, getCallback());
                 break;
             case 1:
-                LiveConfig.load(config, getCallback(1));
+                LiveConfig.load(config, getCallback());
                 break;
             case 2:
                 Setting.putWall(0);
-                WallConfig.load(config, getCallback(2));
+                WallConfig.load(config, getCallback());
                 break;
         }
     }
 
-    private Callback getCallback(int type) {
+    private Callback getCallback() {
         return new Callback() {
             @Override
             public void start() {
@@ -160,36 +161,22 @@ public class SettingActivity extends BaseActivity implements ConfigCallback, Sit
             }
 
             @Override
-            public void success(String result) {
-                Notify.show(result);
-            }
-
-            @Override
             public void success() {
-                setConfig(type);
+                Notify.dismiss();
+                setCacheText();
             }
 
             @Override
             public void error(String msg) {
+                Notify.dismiss();
                 Notify.show(msg);
-                setConfig(type);
             }
         };
-    }
-
-    private void setConfig(int type) {
-        setCacheText();
-        Notify.dismiss();
-        RefreshEvent.config();
-        if (type != 0) return;
-        RefreshEvent.video();
-        RefreshEvent.history();
     }
 
     @Override
     public void setSite(Site item) {
         VodConfig.get().setHome(item);
-        RefreshEvent.video();
     }
 
     @Override
@@ -250,12 +237,13 @@ public class SettingActivity extends BaseActivity implements ConfigCallback, Sit
 
     private void setWallDefault(View view) {
         Setting.putWall(Setting.getWall() == 4 ? 1 : Setting.getWall() + 1);
-        RefreshEvent.wall();
+        Setting.putWallType(0);
+        ConfigEvent.wall();
     }
 
     private void setWallRefresh(View view) {
         Setting.putWall(0);
-        WallConfig.get().load(getCallback(2));
+        WallConfig.get().load(getCallback());
     }
 
     private boolean onWallHistory(View view) {
@@ -326,14 +314,14 @@ public class SettingActivity extends BaseActivity implements ConfigCallback, Sit
     }
 
     private void initConfig() {
-        VodConfig.get().init().load(getCallback(0));
+        VodConfig.get().init().load(getCallback());
         LiveConfig.get().init().load();
         WallConfig.get().init().load();
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onRefreshEvent(RefreshEvent event) {
-        if (event.getType() != RefreshEvent.Type.CONFIG) return;
+    public void onConfigEvent(ConfigEvent event) {
+        if (event.type() != ConfigEvent.Type.COMMON) return;
         mBinding.vodUrl.setText(VodConfig.getDesc());
         mBinding.liveUrl.setText(LiveConfig.getDesc());
         mBinding.wallUrl.setText(WallConfig.getDesc());

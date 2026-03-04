@@ -38,6 +38,7 @@ import com.fongmi.android.tv.bean.Vod;
 import com.fongmi.android.tv.databinding.ActivityHomeBinding;
 import com.fongmi.android.tv.db.AppDatabase;
 import com.fongmi.android.tv.event.CastEvent;
+import com.fongmi.android.tv.event.ConfigEvent;
 import com.fongmi.android.tv.event.RefreshEvent;
 import com.fongmi.android.tv.event.ServerEvent;
 import com.fongmi.android.tv.impl.Callback;
@@ -198,16 +199,8 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
     private Callback getCallback() {
         return new Callback() {
             @Override
-            public void success(String result) {
-                Notify.show(result);
-            }
-
-            @Override
             public void success() {
                 showContent();
-                getHistory();
-                getVideo();
-                setLogo();
             }
 
             @Override
@@ -222,7 +215,6 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
         mBinding.progressLayout.showContent();
         checkAction(getIntent());
         setFocus();
-        setFunc();
     }
 
     private void loadLive(String url) {
@@ -319,11 +311,7 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onRefreshEvent(RefreshEvent event) {
         switch (event.getType()) {
-            case CONFIG:
-                setFunc();
-                setLogo();
-                break;
-            case VIDEO:
+            case HOME:
                 getVideo();
                 break;
             case HISTORY:
@@ -337,23 +325,40 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onConfigEvent(ConfigEvent event) {
+        switch (event.type()) {
+            case VOD:
+                RefreshEvent.history();
+                RefreshEvent.home();
+                setLogo();
+                break;
+            case COMMON:
+                setFunc();
+                break;
+            case BOOT:
+                LiveActivity.start(this);
+                break;
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
     public void onServerEvent(ServerEvent event) {
-        switch (event.getType()) {
+        switch (event.type()) {
             case SEARCH:
-                CollectActivity.start(this, event.getText());
+                CollectActivity.start(this, event.text());
                 break;
             case PUSH:
-                VideoActivity.push(this, event.getText());
+                VideoActivity.push(this, event.text());
                 break;
         }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onCastEvent(CastEvent event) {
-        if (VodConfig.get().getConfig().equals(event.getConfig())) {
-            VideoActivity.cast(this, event.getHistory().save(VodConfig.getCid()));
+        if (VodConfig.get().getConfig().equals(event.config())) {
+            VideoActivity.cast(this, event.history().save(VodConfig.getCid()));
         } else {
-            VodConfig.load(event.getConfig(), getCallback(event));
+            VodConfig.load(event.config(), getCallback(event));
         }
     }
 
@@ -361,9 +366,6 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
         return new Callback() {
             @Override
             public void success() {
-                RefreshEvent.history();
-                RefreshEvent.config();
-                RefreshEvent.video();
                 onCastEvent(event);
             }
 

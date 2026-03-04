@@ -2,9 +2,7 @@ package com.fongmi.android.tv.event;
 
 import org.greenrobot.eventbus.EventBus;
 
-public class StateEvent {
-
-    private final Type type;
+public record StateEvent(Type type) {
 
     public static void empty() {
         EventBus.getDefault().post(new StateEvent(Type.EMPTY));
@@ -16,14 +14,6 @@ public class StateEvent {
 
     public static void content() {
         EventBus.getDefault().post(new StateEvent(Type.CONTENT));
-    }
-
-    private StateEvent(Type type) {
-        this.type = type;
-    }
-
-    public Type getType() {
-        return type;
     }
 
     public enum Type {

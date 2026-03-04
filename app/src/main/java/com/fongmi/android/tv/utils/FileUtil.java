@@ -97,7 +97,7 @@ public class FileUtil {
     public static long getDirectorySize(File dir) {
         long size = 0;
         if (dir == null) return 0;
-        if (dir.isDirectory()) for (File file: Path.list(dir)) size += getDirectorySize(file);
+        if (dir.isDirectory()) for (File file : Path.list(dir)) size += getDirectorySize(file);
         else size = dir.length();
         return size;
     }

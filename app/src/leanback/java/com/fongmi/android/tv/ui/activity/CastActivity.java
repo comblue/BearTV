@@ -286,11 +286,11 @@ public class CastActivity extends BaseActivity implements CustomKeyDownVod.Liste
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onActionEvent(ActionEvent event) {
-        if (ActionEvent.PLAY.equals(event.getAction())) {
+        if (ActionEvent.PLAY.equals(event.action())) {
             onPlay();
-        } else if (ActionEvent.PAUSE.equals(event.getAction())) {
+        } else if (ActionEvent.PAUSE.equals(event.action())) {
             onPaused();
-        } else if (ActionEvent.STOP.equals(event.getAction())) {
+        } else if (ActionEvent.STOP.equals(event.action())) {
             finish();
         }
     }
@@ -303,8 +303,8 @@ public class CastActivity extends BaseActivity implements CustomKeyDownVod.Liste
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onPlayerEvent(PlayerEvent event) {
-        if (!event.getTag().equals(tag)) return;
-        switch (event.getState()) {
+        if (!event.tag().equals(tag)) return;
+        switch (event.state()) {
             case PlayerEvent.PREPARE:
                 setDecode();
                 setState(RenderState.PREPARING);

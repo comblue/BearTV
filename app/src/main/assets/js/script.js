@@ -40,7 +40,7 @@ function tpl_top(path) {
 }
 
 function tpl_dir(name, time, path) {
-    return `<a class="weui-cell weui-cell_access" href="#" onclick="listFile('` + path + `')">
+    return `<a class="weui-cell weui-cell_access" href="javascript:void(0)" onclick="listFile('` + path + `')">
     <div class="weui-cell__hd"><img src="` + ic_dir + `" alt="" style="width: 32px; margin-right: 16px; display: block;"></div>
     <span class="weui-cell__bd">
     <span class="weui-cell__name">` + name + `</span>

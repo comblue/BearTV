@@ -261,7 +261,7 @@ public class LiveActivity extends BaseActivity implements GroupPresenter.OnClick
         List<Group> items = new ArrayList<>();
         for (Group group : live.getGroups()) (group.isHidden() ? mHides : items).add(group);
         mGroupAdapter.setItems(items, null);
-        setPosition(LiveConfig.get().find(items));
+        setPosition(LiveConfig.get().findKeepPosition(items));
     }
 
     private void setWidth(Live live) {
@@ -614,11 +614,11 @@ public class LiveActivity extends BaseActivity implements GroupPresenter.OnClick
         mBinding.widget.name.setMaxEms(48);
         mChannel.loadLogo(mBinding.widget.logo);
         mBinding.widget.title.setSelected(true);
+        mBinding.widget.line.setText(mChannel.getLine());
         mBinding.widget.name.setText(mChannel.getShow());
         mBinding.widget.title.setText(mChannel.getShow());
-        mBinding.widget.line.setText(mChannel.getLineText());
+        mBinding.control.line.setText(mChannel.getLine());
         mBinding.widget.number.setText(mChannel.getNumber());
-        mBinding.control.line.setText(mChannel.getLineText());
         mBinding.widget.line.setVisibility(mChannel.getLineVisible());
         mBinding.control.line.setVisibility(mChannel.getLineVisible());
     }
@@ -699,7 +699,6 @@ public class LiveActivity extends BaseActivity implements GroupPresenter.OnClick
 
             @Override
             public void success() {
-                RefreshEvent.config();
                 setLive(getHome());
             }
 
@@ -746,15 +745,15 @@ public class LiveActivity extends BaseActivity implements GroupPresenter.OnClick
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onActionEvent(ActionEvent event) {
-        if (ActionEvent.PLAY.equals(event.getAction())) {
+        if (ActionEvent.PLAY.equals(event.action())) {
             onPlay();
-        } else if (ActionEvent.PAUSE.equals(event.getAction())) {
+        } else if (ActionEvent.PAUSE.equals(event.action())) {
             onPaused();
-        } else if (ActionEvent.NEXT.equals(event.getAction())) {
+        } else if (ActionEvent.NEXT.equals(event.action())) {
             nextChannel();
-        } else if (ActionEvent.PREV.equals(event.getAction())) {
+        } else if (ActionEvent.PREV.equals(event.action())) {
             prevChannel();
-        } else if (ActionEvent.STOP.equals(event.getAction())) {
+        } else if (ActionEvent.STOP.equals(event.action())) {
             finish();
         }
     }
@@ -773,8 +772,8 @@ public class LiveActivity extends BaseActivity implements GroupPresenter.OnClick
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onPlayerEvent(PlayerEvent event) {
-        if (!event.getTag().equals(tag)) return;
-        switch (event.getState()) {
+        if (!event.tag().equals(tag)) return;
+        switch (event.state()) {
             case PlayerEvent.PREPARE:
                 setDecode();
                 break;
@@ -957,7 +956,7 @@ public class LiveActivity extends BaseActivity implements GroupPresenter.OnClick
     @Override
     public void onFind(String number) {
         mBinding.widget.digital.setVisibility(View.GONE);
-        setPosition(LiveConfig.get().find(number, mGroupAdapter.unmodifiableList()));
+        setPosition(LiveConfig.get().findByChannelNumber(number, mGroupAdapter.unmodifiableList()));
     }
 
     @Override

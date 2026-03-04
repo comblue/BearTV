@@ -108,8 +108,8 @@ public class UaDialog implements DialogInterface.OnDismissListener {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onServerEvent(ServerEvent event) {
-        if (event.getType() != ServerEvent.Type.SETTING) return;
-        binding.text.setText(event.getText());
+        if (event.type() != ServerEvent.Type.SETTING) return;
+        binding.text.setText(event.text());
         binding.positive.performClick();
     }
 

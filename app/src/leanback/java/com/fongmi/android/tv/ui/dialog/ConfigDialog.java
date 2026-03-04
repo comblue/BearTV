@@ -159,9 +159,9 @@ public class ConfigDialog implements DialogInterface.OnDismissListener {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onServerEvent(ServerEvent event) {
-        if (event.getType() != ServerEvent.Type.SETTING) return;
-        binding.name.setText(event.getName());
-        binding.text.setText(event.getText());
+        if (event.type() != ServerEvent.Type.SETTING) return;
+        binding.name.setText(event.name());
+        binding.text.setText(event.text());
         binding.text.setSelection(binding.text.getText().length());
     }
 

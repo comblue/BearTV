@@ -1172,22 +1172,22 @@ public class VideoActivity extends BaseActivity implements Clock.Callback, Custo
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onActionEvent(ActionEvent event) {
         if (isRedirect()) return;
-        if (ActionEvent.PLAY.equals(event.getAction())) {
+        if (ActionEvent.PLAY.equals(event.action())) {
             onPlay();
-        } else if (ActionEvent.PAUSE.equals(event.getAction())) {
+        } else if (ActionEvent.PAUSE.equals(event.action())) {
             onPaused();
-        } else if (ActionEvent.NEXT.equals(event.getAction())) {
+        } else if (ActionEvent.NEXT.equals(event.action())) {
             checkNext();
-        } else if (ActionEvent.PREV.equals(event.getAction())) {
+        } else if (ActionEvent.PREV.equals(event.action())) {
             checkPrev();
-        } else if (ActionEvent.LOOP.equals(event.getAction())) {
+        } else if (ActionEvent.LOOP.equals(event.action())) {
             onLoop();
-        } else if (ActionEvent.REPLAY.equals(event.getAction())) {
+        } else if (ActionEvent.REPLAY.equals(event.action())) {
             onReplay();
-        } else if (ActionEvent.AUDIO.equals(event.getAction())) {
+        } else if (ActionEvent.AUDIO.equals(event.action())) {
             moveTaskToBack(true);
             setAudioOnly(true);
-        } else if (ActionEvent.STOP.equals(event.getAction())) {
+        } else if (ActionEvent.STOP.equals(event.action())) {
             finish();
         }
     }
@@ -1204,8 +1204,8 @@ public class VideoActivity extends BaseActivity implements Clock.Callback, Custo
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onPlayerEvent(PlayerEvent event) {
-        if (!event.getTag().equals(tag)) return;
-        switch (event.getState()) {
+        if (!event.tag().equals(tag)) return;
+        switch (event.state()) {
             case PlayerEvent.PREPARE:
                 setDecode();
                 setPosition();

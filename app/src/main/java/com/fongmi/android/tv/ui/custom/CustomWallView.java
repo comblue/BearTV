@@ -20,7 +20,7 @@ import androidx.media3.ui.PlayerView;
 import com.fongmi.android.tv.R;
 import com.fongmi.android.tv.Setting;
 import com.fongmi.android.tv.databinding.ViewWallBinding;
-import com.fongmi.android.tv.event.RefreshEvent;
+import com.fongmi.android.tv.event.ConfigEvent;
 import com.fongmi.android.tv.utils.FileUtil;
 import com.fongmi.android.tv.utils.ResUtil;
 
@@ -66,8 +66,8 @@ public class CustomWallView extends FrameLayout implements DefaultLifecycleObser
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onRefreshEvent(RefreshEvent event) {
-        if (event.getType() == RefreshEvent.Type.WALL) refresh();
+    public void onConfigEvent(ConfigEvent event) {
+        if (event.type() == ConfigEvent.Type.WALL) refresh();
     }
 
     private void refresh() {

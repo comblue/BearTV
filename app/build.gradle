@@ -16,8 +16,8 @@ android {
         minSdk 24
         //noinspection ExpiredTargetSdkVersion
         targetSdk 28
-        versionCode 519
-        versionName "5.1.9"
+        versionCode 525
+        versionName "5.2.5"
         javaCompileOptions {
             annotationProcessorOptions {
                 arguments = ["room.schemaLocation": "$projectDir/schemas".toString(), "eventBusIndex": "com.fongmi.android.tv.event.EventIndex"]
@@ -123,7 +123,7 @@ dependencies {
     implementation 'com.github.bumptech.glide:avif-integration:' + glideVersion
     implementation 'com.github.bumptech.glide:okhttp3-integration:' + glideVersion
     implementation 'com.github.jahirfiquitiva:TextDrawable:1.0.3'
-    implementation 'com.github.teamnewpipe:NewPipeExtractor:v0.25.2'
+    implementation 'com.github.teamnewpipe:NewPipeExtractor:v0.26.0'
     implementation 'com.google.android.material:material:1.13.0'
     implementation 'com.guolindev.permissionx:permissionx:1.8.1'
     implementation 'javax.servlet:javax.servlet-api:3.1.0'

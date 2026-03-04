@@ -139,7 +139,7 @@ public class LiveViewModel extends ViewModel {
         item.getGroups().removeIf(Group::isEmpty);
         if (item.getGroups().isEmpty() || item.getGroups().get(0).isKeep()) return;
         item.getGroups().add(0, Group.create(R.string.keep));
-        LiveConfig.get().setKeep(item.getGroups());
+        LiveConfig.get().applyKeepsToGroups(item.getGroups());
     }
 
     private <T> void execute(TaskType type, Callable<T> callable) {

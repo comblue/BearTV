@@ -3,39 +3,27 @@ package com.fongmi.android.tv.api.config;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.MediaMetadataRetriever;
-import android.text.TextUtils;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.fongmi.android.tv.App;
-import com.fongmi.android.tv.R;
 import com.fongmi.android.tv.Setting;
 import com.fongmi.android.tv.bean.Config;
-import com.fongmi.android.tv.event.RefreshEvent;
+import com.fongmi.android.tv.event.ConfigEvent;
 import com.fongmi.android.tv.impl.Callback;
 import com.fongmi.android.tv.utils.Download;
 import com.fongmi.android.tv.utils.FileUtil;
-import com.fongmi.android.tv.utils.Notify;
 import com.fongmi.android.tv.utils.ResUtil;
 import com.fongmi.android.tv.utils.UrlUtil;
-import com.github.catvod.net.OkHttp;
 import com.github.catvod.utils.Path;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.InterruptedIOException;
-import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicInteger;
 
-public class WallConfig {
+public class WallConfig extends BaseConfig {
 
     private static final String TAG = WallConfig.class.getSimpleName();
-    private final AtomicInteger taskId = new AtomicInteger(0);
-
-    private Config config;
-    private Future<?> future;
-    private boolean sync;
 
     private static class Loader {
         static volatile WallConfig INSTANCE = new WallConfig();
@@ -68,47 +56,39 @@ public class WallConfig {
         return this;
     }
 
-    private boolean isCanceled(Throwable e) {
-        return "Canceled".equals(e.getMessage()) || e instanceof InterruptedException || e.getCause() instanceof InterruptedIOException;
-    }
-
     public void load() {
+        if (sync) return;
         load(new Callback());
     }
 
-    public void load(Callback callback) {
-        int id = taskId.incrementAndGet();
-        if (future != null && !future.isDone()) future.cancel(true);
-        future = App.submit(() -> loadConfig(id, config, callback));
-        callback.start();
+    @Override
+    protected String getTag() {
+        return TAG;
     }
 
-    private void loadConfig(int id, Config config, Callback callback) {
-        try {
-            OkHttp.cancel(TAG);
-            download(id, config.getUrl(), callback);
-            if (taskId.get() == id && config.equals(this.config)) config.update();
-        } catch (Throwable e) {
-            e.printStackTrace();
-            if (isCanceled(e)) return;
-            if (taskId.get() != id) return;
-            if (TextUtils.isEmpty(config.getUrl())) App.post(() -> callback.error(""));
-            else App.post(() -> callback.error(Notify.getError(R.string.error_config_get, e)));
-            Setting.putWall(1);
-            RefreshEvent.wall();
-        }
+    @Override
+    protected Config defaultConfig() {
+        return Config.wall();
     }
 
-    private void download(int id, String url, Callback callback) throws Throwable {
+    @Override
+    protected void postEvent() {
+        super.postEvent();
+        ConfigEvent.wall();
+    }
+
+    @Override
+    protected void load(Config config) throws Throwable {
         File file = FileUtil.getWall(0);
+        checkUrl(config.getUrl(), file);
+        setWallType(file);
+        setSnapshot(file);
+    }
+
+    private void checkUrl(String url, File file) throws Throwable {
         if (url.startsWith("file")) Path.copy(Path.local(url), file);
         else Download.create(UrlUtil.convert(url), file).tag(TAG).get();
         if (!Path.exists(file)) throw new FileNotFoundException();
-        if (taskId.get() != id) return;
-        setWallType(file);
-        setSnapshot(file);
-        RefreshEvent.wall();
-        App.post(callback::success);
     }
 
     private void setWallType(File file) {
@@ -142,13 +122,5 @@ public class WallConfig {
         } catch (Exception e) {
             return false;
         }
-    }
-
-    public boolean needSync(String url) {
-        return sync || TextUtils.isEmpty(config.getUrl()) || url.equals(config.getUrl());
-    }
-
-    public Config getConfig() {
-        return config == null ? Config.wall() : config;
     }
 }
