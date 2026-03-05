@@ -215,7 +215,6 @@ public class VodFragment extends BaseFragment implements ConfigCallback, SiteCal
     }
 
     private void homeContent() {
-        setTitle();
         showProgress();
         setFabVisible(0);
         mAdapter.clear();
@@ -232,18 +231,19 @@ public class VodFragment extends BaseFragment implements ConfigCallback, SiteCal
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onConfigEvent(ConfigEvent event) {
+        if (event.type() == ConfigEvent.Type.VOD) setLogo();
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
     public void onRefreshEvent(RefreshEvent event) {
         switch (event.getType()) {
             case HOME:
+                setTitle();
             case SIZE:
                 homeContent();
                 break;
         }
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onConfigEvent(ConfigEvent event) {
-        if (event.type() == ConfigEvent.Type.VOD) setLogo();
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -271,6 +271,7 @@ public class VodFragment extends BaseFragment implements ConfigCallback, SiteCal
                 showProgress();
                 hideContent();
                 setTitle();
+                setLogo();
             }
 
             @Override

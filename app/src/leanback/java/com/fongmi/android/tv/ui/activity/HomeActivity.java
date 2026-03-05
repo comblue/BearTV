@@ -233,7 +233,6 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
     }
 
     private void getVideo() {
-        setTitle();
         mResult = Result.empty();
         int index = getRecommendIndex();
         boolean gone = mAdapter.indexOf("progress") == -1;
@@ -309,22 +308,6 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onRefreshEvent(RefreshEvent event) {
-        switch (event.getType()) {
-            case HOME:
-                getVideo();
-                break;
-            case HISTORY:
-                getHistory();
-                break;
-            case SIZE:
-                getVideo();
-                getHistory(true);
-                break;
-        }
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
     public void onConfigEvent(ConfigEvent event) {
         switch (event.type()) {
             case VOD:
@@ -337,6 +320,23 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
                 break;
             case BOOT:
                 LiveActivity.start(this);
+                break;
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onRefreshEvent(RefreshEvent event) {
+        switch (event.getType()) {
+            case HOME:
+                getVideo();
+                setTitle();
+                break;
+            case HISTORY:
+                getHistory();
+                break;
+            case SIZE:
+                getVideo();
+                getHistory(true);
                 break;
         }
     }
@@ -450,7 +450,6 @@ public class HomeActivity extends BaseActivity implements CustomTitleView.Listen
     @Override
     public void setSite(Site item) {
         VodConfig.get().setHome(item);
-        getVideo();
     }
 
     @Override

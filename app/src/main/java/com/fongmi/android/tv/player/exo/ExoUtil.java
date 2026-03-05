@@ -81,6 +81,7 @@ public class ExoUtil {
     }
 
     public static String getMimeType(int errorCode) {
+        if (errorCode == PlaybackException.ERROR_CODE_PARSING_MANIFEST_UNSUPPORTED || errorCode == PlaybackException.ERROR_CODE_PARSING_MANIFEST_MALFORMED) return MimeTypes.APPLICATION_OCTET_STREAM;
         if (errorCode == PlaybackException.ERROR_CODE_PARSING_CONTAINER_UNSUPPORTED || errorCode == PlaybackException.ERROR_CODE_PARSING_CONTAINER_MALFORMED || errorCode == PlaybackException.ERROR_CODE_IO_UNSPECIFIED) return MimeTypes.APPLICATION_M3U8;
         return null;
     }
@@ -102,7 +103,7 @@ public class ExoUtil {
         return new MediaItem.RequestMetadata.Builder().setMediaUri(uri).setExtras(extras).build();
     }
 
-    private static List<MediaItem.SubtitleConfiguration> getSubtitleConfigs(List<Sub> subs) {
+    private static List<MediaItem.SubtitleConfiguration> getSubtitleConfigs (List<Sub> subs) {
         List<MediaItem.SubtitleConfiguration> configs = new ArrayList<>();
         if (subs != null) for (Sub sub : subs) configs.add(sub.config());
         return configs;
