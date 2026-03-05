@@ -8,8 +8,7 @@ http://127.0.0.1:{port}
 
 > 實際埠號依系統可用情況而定，預設起始為 9978。
 
-所有端點支援 GET 與 POST（除特別標注外），參數可放在 Query String 中。回應若無特別說明皆為 `text/plain`
-，成功回傳 `OK`，失敗回傳 `500` 與錯誤訊息。
+所有端點支援 GET 與 POST（除特別標注外），參數可放在 Query String 中。回應若無特別說明皆為 `text/plain`，成功回傳 `OK`，失敗回傳 `500` 與錯誤訊息。
 
 ---
 
@@ -382,8 +381,7 @@ GET http://127.0.0.1:9978/file/{path}
 | `""`               | 上一層為根目錄。       |
 | `"path/to/parent"` | 上一層目錄的相對路徑。    |
 
-**檔案回應：** 直接串流檔案內容，支援 Range 請求（`206 Partial Content`）與 ETag 快取（
-`304 Not Modified`）。
+**檔案回應：** 直接串流檔案內容，支援 Range 請求（`206 Partial Content`）與 ETag 快取（`304 Not Modified`）。
 
 ---
 
@@ -475,8 +473,7 @@ GET http://127.0.0.1:9978/parse?jxs={jxs}&url={url}
 GET/POST http://127.0.0.1:9978/proxy?...
 ```
 
-所有 Query String 參數、請求標頭與 POST Body 會合併後傳入 `BaseLoader.get().proxy(params)`。回應由爬蟲
-`proxy()` 決定，框架原封不動地轉發爬蟲回傳的串流與標頭。
+所有 Query String 參數、請求標頭與 POST Body 會合併後傳入 `BaseLoader.get().proxy(params)`。回應由爬蟲 `proxy()` 決定，框架原封不動地轉發爬蟲回傳的串流與標頭。
 
 爬蟲如何實作 `proxy()` 方法及取得代理 URL，見 [SPIDER.md — 爬蟲本地代理 URL](SPIDER.md#爬蟲本地代理-url)。
 
