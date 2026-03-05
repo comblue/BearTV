@@ -1,8 +1,6 @@
-# 📺 開發者文件
+# 開發者文件
 
-基於 [CatVod](https://github.com/CatVodTVOfficial/CatVodTVJarLoader) 的開源 Android 影音應用程式，同時支援
-**Android TV 大螢幕** 與 **手機** 兩種使用情境。爬蟲引擎支援 Java JAR、JavaScript、Python
-三種語言，透過外部配置檔靈活擴展內容來源。
+基於 [CatVod](https://github.com/CatVodTVOfficial/CatVodTVJarLoader) 的開源 Android 影音應用程式，同時支援 **Android TV 大螢幕**與**手機**兩種使用情境，並且透過外部配置靈活擴展內容。
 
 [討論群組](https://t.me/fongmi_official) | [發布頻道](https://t.me/fongmi_release)
 
@@ -25,14 +23,15 @@
 
 ---
 
-## 🏗️ 專案架構
+## 專案架構
 
-| 項目                 | 值                             |
-|--------------------|-------------------------------|
-| Package            | `com.fongmi.android.tv`       |
-| minSdk / targetSdk | 24 / 28                       |
-| ABI                | `arm64-v8a`、`armeabi-v7a`     |
-| Flavor             | `leanback`（電視版）、`mobile`（手機版） |
+| 項目        | 值                             |
+|-----------|-------------------------------|
+| Package   | `com.fongmi.android.tv`       |
+| minSdk    | 24（Android 7.0 Nougat）        |
+| targetSdk | 28（Android 9.0 Pie）           |
+| ABI       | `arm64-v8a`、`armeabi-v7a`     |
+| Flavor    | `leanback`（電視版）、`mobile`（手機版） |
 
 ```
 TV/
@@ -46,7 +45,7 @@ TV/
 
 ---
 
-## 🎬 播放器
+## 播放器
 
 - **核心**：ExoPlayer（Media3）+ FFmpeg 軟解，硬解 / 軟解自動降級切換
 - **渲染**：SurfaceView / TextureView
@@ -57,7 +56,7 @@ TV/
 
 ---
 
-## 📼 點播功能
+## 點播功能
 
 - 多站點分類瀏覽，Filter 篩選（年份 / 地區 / 類型等）
 - 多站點**並行搜尋**，關鍵字自動繁轉簡提升相容性
@@ -67,7 +66,7 @@ TV/
 
 ---
 
-## 📡 直播功能
+## 直播功能
 
 - 支援 M3U/M3U8、TXT（`#genre#` 分組）、JSON 三種直播源格式
 - **EPG**：XMLTV 格式（支援 `.gz`），每 6 小時自動刷新
@@ -77,14 +76,19 @@ TV/
 
 ---
 
-## 🕷️ 爬蟲引擎
+## 爬蟲引擎
 
-支援三種語言撰寫爬蟲：Java JAR（DexClassLoader）、JavaScript（QuickJS）、Python（Chaquopy）。透過 `api`
-欄位指定爬蟲，`ext` 欄位傳入初始化參數。完整 API 規格見 [SPIDER.md](docs/SPIDER.md)。
+支援三種語言撰寫爬蟲：
+
+- Java JAR（DexClassLoader）
+- JavaScript（QuickJS）
+- Python（Chaquopy）
+
+透過 `api` 欄位指定爬蟲，`ext` 欄位傳入初始化參數。完整 API 規格見 [SPIDER.md](docs/SPIDER.md)。
 
 ---
 
-## 🌐 網路功能
+## 網路功能
 
 - **DoH**：DNS over HTTPS，支援 Bootstrap IP
 - **代理**：HTTP / HTTPS / SOCKS4 / SOCKS5，依 host 正則規則動態選擇
@@ -95,7 +99,7 @@ TV/
 
 ---
 
-## 📲 DLNA 投放
+## DLNA 投放
 
 - **DMC（投放端）**：手機版，掃描區域網路 DLNA 設備並投放媒體
 - **DMR（被投放端）**：電視版，作為 DLNA Renderer 接收其他設備投放
@@ -104,22 +108,25 @@ TV/
 
 ---
 
-## 🖥️ 遠端控制
+## 遠端控制
 
-應用啟動後綁定本地 HTTP 伺服器（NanoHTTPD），埠號從 **9978** 起自動偵測至 **9998**
-，可用於播放控制、推送字幕 / 彈幕、多裝置同步等。完整端點說明見 [LOCAL.md](docs/LOCAL.md)。
-
----
-
-## ⚙️ 配置說明
-
-`config.json`（VOD 配置）為應用主要入口，透過頂層欄位定義點播站點（`sites`）、解析規則（`parses`）、直播來源（
-`lives`）及網路設定（`doh`、`proxy`、`hosts`、`ads`）。Live
-配置可內嵌或獨立存放。完整欄位說明見 [CONFIG.md](docs/CONFIG.md)。
+應用啟動後綁定本地 HTTP 伺服器（NanoHTTPD），埠號從 **9978** 起自動偵測至 **9998**，可用於播放控制、推送字幕 / 彈幕、多裝置同步等。完整端點說明見 [LOCAL.md](docs/LOCAL.md)。
 
 ---
 
-## 📚 延伸閱讀
+## 配置說明
+
+VOD 配置為應用主要入口，透過 URL 或本地路徑載入，頂層欄位定義：
+
+- 點播站點（`sites`）、解析規則（`parses`）
+- 直播來源（`lives`）
+- 網路設定（`doh`、`proxy`、`hosts`、`ads`）
+
+Live 配置可內嵌或獨立存放。完整欄位說明見 [CONFIG.md](docs/CONFIG.md)。
+
+---
+
+## 延伸閱讀
 
 | 文件                          | 說明                   |
 |-----------------------------|----------------------|

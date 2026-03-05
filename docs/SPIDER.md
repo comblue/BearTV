@@ -11,7 +11,7 @@
 - [Spider 抽象類別](#spider-抽象類別)
     - [init — 初始化](#init--初始化)
     - [homeContent — 首頁分類](#homecontent--首頁分類)
-    - [homeVideoContent — 首頁推薦影片](#homevideoContent--首頁推薦影片)
+    - [homeVideoContent — 首頁推薦影片](#homevideocontent--首頁推薦影片)
     - [categoryContent — 分類列表](#categorycontent--分類列表)
     - [detailContent — 影片詳情](#detailcontent--影片詳情)
     - [searchContent — 搜尋](#searchcontent--搜尋)
@@ -32,7 +32,7 @@
     - [播放集數格式（vod_play_from / vod_play_url）](#播放集數格式vod_play_from--vod_play_url)
 - [完整 JSON 範例](#完整-json-範例)
     - [homeContent 回傳範例](#homecontent-回傳範例)
-    - [homeVideoContent / categoryContent 回傳範例](#homevideoContent--categorycontent-回傳範例)
+    - [homeVideoContent / categoryContent 回傳範例](#homevideocontent--categorycontent-回傳範例)
     - [detailContent 回傳範例](#detailcontent-回傳範例)
     - [playerContent 回傳範例](#playercontent-回傳範例)
     - [searchContent 回傳範例](#searchcontent-回傳範例)
@@ -43,8 +43,7 @@
 
 ## 概覽
 
-Spider 是應用程式爬蟲的抽象基底類別，位於 `com.github.catvod.crawler.Spider`。每個影片來源（`Site`）對應一個
-Spider 實例。
+Spider 是應用程式爬蟲的抽象基底類別，位於 `com.github.catvod.crawler.Spider`。每個影片來源（`Site`）對應一個 Spider 實例。
 
 **生命週期：**
 
